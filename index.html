@@ -1,171 +1,204 @@
-<style>
-  div {
-    width: 40px;
-    height: 40px;
-    display: inline-block;
-  }
-
-  .cats {
-    display: inline-block;
-    margin-right: 300px; /* Increase the margin-right value for more space */
-    margin-bottom: 300px;
-    opacity: 0; /* Set initial opacity to 1 */
-    transition: opacity 0.5s ease;
-  }
-
-  .diamond {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
-  }
-
-  .red {
-    background-color: #BEB8EB;
-  }
-
-  .blue {
-    background-color: black;
-  }
-
-  .yellow {
-    background-color: black;
-  }
-
-  .pink {
-    background-color: black;
-  }
-
-  .light-blue {
-    background-color: black;
-  }
-
-  .background {
-    position: absolute;
-    background-color: black;
-    width: 100vw;  /* Ensures the background covers the entire viewport width */
-    height: 100vh; 
-    top: 0px;
-    left: 0px;
-    z-index: -1;
-    overflow: hidden; /* Ensures the elements don't overflow outside */
-  }
-</style>
-
-<body>
-  <section class="background">
-  </section>
-
-  <script src="https://cdn.jsdelivr.net/gh/netizenorg/netnet-standard-library/build/nn.min.js"></script>
-  <script>
-    /* global nn */
-
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-    let pixelCounter = 0;
-    let maxPixels = (screenWidth / 40) * (screenHeight / 40); // Max number of pixels based on screen size
-
-    function getRandomColor() {
-      const colors = ['red', 'blue', 'yellow', 'pink', 'light-blue'];
-      const randomIndex = Math.floor(Math.random() * colors.length);
-      return colors[randomIndex];
-    }
-
-    function newPixel() {
-      if (pixelCounter >= maxPixels) {
-        resetAnimation(); // Reset the animation when max pixels are reached
-      } else {
-        const div = nn.create('div');
-        if (nn.random() > 0.5) {
-          div.setAttribute('class', 'diamond ' + getRandomColor());
-        } else {
-          const colorClass = getRandomColor();
-          div.setAttribute('class', colorClass);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Pixel Art Lilies</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* Prevent scrolling */
+            background-color: black; /* Black background */
         }
-        div.addTo('.background');
-        pixelCounter++;
-      }
-    }
+        canvas {
+            display: block; /* Remove padding around canvas */
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
 
-    function resetAnimation() {
-      const background = nn.get('.background');
-      background.innerHTML = ''; // Clear all blocks
-      pixelCounter = 0; // Reset the pixel counter
-      animation(); // Restart the animation
-    }
+        // Resize the canvas to fill the entire window
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-    function animation() {
-      newPixel();
-      setTimeout(animation, 25); // Loop the animation with a delay
-    }
+        // Define pixel size for pixelated effect
+        const pixelSize = 10;
 
-    nn.on('load', animation);
+        function drawPixel(x, y, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize); // Draw a pixel
+        }
 
-    /* cats */
-    const clickLimit = 1000;
-    let clickCounter = 0;
+        function drawTexturedPetal(x, y, angle, colors, scale) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            // Draw petal with a gradient texture
+            const gradient = ctx.createLinearGradient(0, -100 * scale, 0, 0); // Vertical gradient
+            colors.forEach((color, index) => {
+                gradient.addColorStop(index / (colors.length - 1), color);
+            });
+            ctx.fillStyle = gradient;
 
-    const imageOrder = [
-      'mindflown1.png',
-      'mindflown2.png',
-      'mindflown3.png',
-      'cyberpunk1.png',
-      'mindflow4.png',
-      'stacia1.png',
-      'eid1.png',
-      'josh1.png',
-      'circle1.png',
-      'neon1.png',
-      'sunset.png',
-      'green.png',
-      'stacia2p.png',
-      'josh2p.png',
-      'IMG_6680.jpg',
-      'IMG_6701.jpg',
-      'IMG_6702.jpg',
-      'IMG_6703.jpg',
-      'IMG_6704.jpg',
-      'IMG_6705.jpg',
-      'IMG_6706.jpg',
-      'IMG_6707.jpg',
-      'IMG_6708.jpg',
-      'IMG_6710.jpg',
-      'IMG_6711.jpg',
-      'IMG_6712.jpg',
-      'IMG_6713.jpg',
-      'IMG_6714.jpg',
-      'IMG_6715.jpg',
-      'IMG_6717.jpg',
-      'IMG_6718.jpg',
-      'IMG_6719.jpg',
-      'IMG_6720.jpg',
-      'IMG_6721.jpg',
-      'IMG_6723.jpg',
-      'IMG_6724.jpg',
-    ];
+            // Draw a longer petal shape with a pointed end, scaled for blooming effect
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(50 * scale, -100 * scale, 120 * scale, -100 * scale, 80 * scale, 0); // Right curve for longer petal
+            ctx.bezierCurveTo(120 * scale, 100 * scale, 50 * scale, 100 * scale, 0, 0); // Left curve for longer petal
+            ctx.fill();
 
-    function newPatch() {
-      if (clickCounter >= clickLimit) {
-      } else {
-        const div = nn.create('div');
-        const img = nn.create('img');
-        const imageUrl = imageOrder[clickCounter % imageOrder.length];
-        img.setAttribute('src', imageUrl);
-        img.setAttribute('width', '300');
-        img.setAttribute('height', '300');
-        div.setAttribute('class', 'cats');
+            // Draw white streaks on the petals
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; // White color with some transparency
+            for (let i = -20; i <= 20; i += 10) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * scale); // Vertical streaks
+                ctx.lineTo(80 * scale, i * scale); // End of streaks on petal edge
+                ctx.stroke();
+            }
 
-        div.appendChild(img);
-        div.addTo('body');
+            ctx.restore();
+        }
 
-        // Trigger a reflow to apply the initial opacity transition
-      	div.offsetHeight;
-        div.style.opacity = 1;
-        clickCounter++;
-      }
-    }
-    nn.on('click', newPatch);
-  </script>
+        function drawStamen(x, y) {
+            const stamenColor = '#FFD700'; // Yellow color for the stamen
+            const stamenLength = 10; // Length of the stamens
+            const stamenWidth = 2; // Width of the stamens
+
+            for (let i = 0; i < 8; i++) {
+                const angle = (Math.PI / 4) * i; // 45 degrees apart
+                ctx.fillStyle = stamenColor;
+                ctx.fillRect(
+                    x + 2 * Math.cos(angle), 
+                    y + 2 * Math.sin(angle), 
+                    stamenWidth, 
+                    stamenLength // Draw stamen as rectangles
+                );
+            }
+        }
+
+        function drawSepal(x, y) {
+            const sepalColors = ['#3C763D', '#4CAF50', '#A5D6A7']; // Green shades for sepals
+
+            for (let i = 0; i < 3; i++) {
+                ctx.fillStyle = sepalColors[i];
+                ctx.beginPath();
+                ctx.moveTo(x + Math.cos((Math.PI / 3) * i) * 30, y + Math.sin((Math.PI / 3) * i) * 30); // Position of sepal
+                ctx.lineTo(x + Math.cos((Math.PI / 3) * (i + 1)) * 30, y + Math.sin((Math.PI / 3) * (i + 1)) * 30);
+                ctx.lineTo(x + Math.cos((Math.PI / 3) * (i + 0.5)) * 40, y + Math.sin((Math.PI / 3) * (i + 0.5)) * 40); // Longer tip
+                ctx.fill();
+            }
+        }
+
+        function drawLily(x, y, scale, rotation) {
+            const petalColors = [
+                ['#FF4C4C', '#FF6F61', '#FF8A8A'], // Red shades
+                ['#FF9B4D', '#FFB74D', '#FFD48A'], // Orange shades
+                ['#FF4C83', '#FF4081', '#FF66A6'], // Pink shades
+                ['#FFE74C', '#FFEB3B', '#FFFF8A'], // Yellow shades
+                ['#4C97FF', '#6CBFFF', '#A3D5FF'], // Light Blue shades
+                ['#9B4DFF', '#B66CFF', '#D59DFF']  // Purple shades
+            ]; // Distinct petal color gradients
+
+            // Draw 6 larger petals
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i + rotation; // 60 degrees apart, adding rotation
+                drawTexturedPetal(x, y, angle, petalColors[i], scale);
+            }
+
+            // Draw a smaller center of the lily
+            ctx.fillStyle = '#8B4513'; // Brown center
+            ctx.beginPath();
+            ctx.arc(x, y, pixelSize * scale, 0, Math.PI * 2); // Draw the smaller center
+            ctx.fill();
+
+            // Draw pollen details in the center
+            ctx.fillStyle = '#FFD700'; // Yellow pollen
+            for (let i = 0; i < 8; i++) {
+                const angle = (Math.PI / 4) * i; // 45 degrees apart
+                const radius = 4;
+                ctx.beginPath();
+                ctx.arc(x + radius * Math.cos(angle), y + radius * Math.sin(angle), pixelSize / 2, 0, Math.PI * 2); // Pollen details
+                ctx.fill();
+            }
+
+            // Draw stamen and sepals
+            drawStamen(x, y);
+            drawSepal(x, y);
+        }
+
+        // Variables for animation
+        let lilies = [
+            { x: canvas.width / 4, y: canvas.height / 4, scale: 0, rotation: 0 },
+            { x: canvas.width / 1.5, y: canvas.height / 4, scale: 0, rotation: 0 },
+            { x: canvas.width / 3, y: canvas.height / 1.5, scale: 0, rotation: 0 },
+            { x: canvas.width * 0.75, y: canvas.height / 1.5, scale: 0, rotation: 0 },
+            { x: canvas.width / 2, y: canvas.height / 2, scale: 0, rotation: 0 }
+        ];
+        const bloomSpeed = 0.005; // Further reduced bloom speed
+
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+            lilies.forEach(lily => {
+                if (lily.scale < 3) { // Continue growing until a max size
+                    lily.scale += bloomSpeed; // Increase the scale
+                }
+
+                // Rotate the lily continuously
+                lily.rotation += 0.01; // Continuous rotation speed
+
+                drawLily(lily.x, lily.y, lily.scale, lily.rotation); // Draw the lily with current scale and rotation
+
+                // Move the lily off the screen when it's big enough
+                if (lily.scale >= 3) {
+                    lily.x += 1; // Move the lily to the right slower
+                }
+
+                // Reset the lily position to loop animation
+                if (lily.x > canvas.width) {
+                    lily.x = -100; // Move off the left side of the screen
+                    lily.scale = 0; // Reset scale for blooming again
+                }
+            });
+
+            // Draw a pixelated overlay on the entire frame
+            for (let x = 0; x < canvas.width; x += pixelSize) {
+                for (let y = 0; y < canvas.height; y += pixelSize) {
+                    const pixelData = ctx.getImageData(x, y, pixelSize, pixelSize);
+                    const avgColor = `rgba(${pixelData.data[0]}, ${pixelData.data[1]}, ${pixelData.data[2]}, 1)`;
+                    drawPixel(x / pixelSize, y / pixelSize, avgColor); // Draw each pixel with averaged color
+                }
+            }
+
+            requestAnimationFrame(animate); // Call the next animation frame
+        }
+
+        // Start the animation
+        animate();
+    </script>
 </body>
+</html>
 
-</body>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
